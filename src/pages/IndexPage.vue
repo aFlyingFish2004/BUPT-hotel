@@ -1,15 +1,12 @@
 <template>
-  <q-page class="flex flex-center">
-    <img
-      alt="Quasar logo"
-      src="~assets/quasar-logo-vertical.svg"
-      style="width: 200px; height: 200px"
-    >
-  </q-page>
+  <h5>url: </h5>
+  <h5>客户页面：/panel </h5>
+  <h5>管理员操作页面：/admin </h5>
+  <h5>管理员监控页面：/monitor </h5>
 </template>
 
-<script setup>
-defineOptions({
-  name: 'IndexPage'
-});
-</script>
+
+
+
+
+

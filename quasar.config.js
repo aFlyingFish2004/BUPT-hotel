@@ -21,8 +21,8 @@ module.exports = configure(function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      
-      
+
+
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
@@ -82,7 +82,9 @@ module.exports = configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
       // https: true
-      open: true // opens browser window automatically
+      host: '0.0.0.0', // 允许所有网络接口访问
+      port: 8080,       // 默认端口
+      open: false        // 自动打开浏览器
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework

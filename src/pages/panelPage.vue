@@ -52,7 +52,7 @@
 
 
 <script setup>
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue';
 import Customer from 'src/models/Customer';
 
 // 创建 Customer 实例并用 Vue 的响应式系统包裹
@@ -62,7 +62,7 @@ const toggleAC = () => {
   customer.acState = !customer.acState;
   if (customer.acState) {
     customer.PowerOn('/panel/poweron'); // 启动空调，传入相应的API路径
-  } else{
+  } else {
     customer.PowerOff('/panel/poweroff');
   }
 };
@@ -70,46 +70,76 @@ const toggleAC = () => {
 watch(
   () => customer.targetTemperature,
   (newTemperature) => {
-    console.log('目标温度已成功设置为:', newTemperature);
-    customer.ChangeTemp('/panel/changetemp');
+    if(customer.acState){
+      console.log('目标温度已成功设置为:', newTemperature);
+      customer.ChangeTemp('/panel/changetemp');
+    }
   }
 );
 
 watch(
   () => customer.currentFanSpeed,
   (newFanSpeed) => {
-    console.log('风速已更新为:', newFanSpeed);
-    customer.ChangeSpeed('/panel/changespeed')
+    if(customer.acState){
+      console.log('风速已更新为:', newFanSpeed);
+      customer.ChangeSpeed('/panel/changespeed');
+    }
   }
 );
 
-let timerId = null;
+// 定时器ID变量
+let acStateTimerId = null;
+let allStateTimerId = null;
+
+// 定期发送 RequestState 的函数
 const RequestState = () => {
   if (customer.acState) {
-    console.log('发送请求')
+    console.log('发送空调状态请求');
     customer.RequestState('/panel/requeststate');
-}};
+  }
+};
 
-// 监听acState的变化
+// 定期发送 RequestAllState 的函数
+const RequestAllState = () => {
+  console.log('发送所有状态请求', customer.acState);
+  customer.RequestAllState('/panel/requestallstate');
+};
+
+// 监听空调开关状态变化，控制空调状态定时器
 watch(
-  () => customer.acState, // 监听acState
+  () => customer.acState,
   (newValue) => {
-    console.log(newValue);
     if (newValue) {
-      console.log('acState 为 true，启动定时器');
-      timerId = setInterval(RequestState, 5000);
+      console.log('acState 为 true，启动空调状态定时器');
+      acStateTimerId = setInterval(RequestState, 5000);
     } else {
-      console.log('acState 为 false，停止定时器');
-      if (timerId) {
-        clearInterval(timerId);
-        timerId = null; // 清空定时器ID
+      console.log('acState 为 false，停止空调状态定时器');
+      if (acStateTimerId) {
+        clearInterval(acStateTimerId);
+        acStateTimerId = null;
       }
     }
   },
-  { immediate: true } // immediate: true 会在初始时就执行一次回调函数
+  { immediate: true }
 );
 
+// 在组件挂载时启动 RequestAllState 定时器
+onMounted(() => {
+  console.log('组件挂载，启动全状态定时器');
+  allStateTimerId = setInterval(RequestAllState, 3000);
+});
+
+// 在组件卸载前清除所有定时器
+onBeforeUnmount(() => {
+  if (acStateTimerId) {
+    clearInterval(acStateTimerId);
+  }
+  if (allStateTimerId) {
+    clearInterval(allStateTimerId);
+  }
+});
 </script>
+
 
 <style scoped>
 .background {

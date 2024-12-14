@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, onMounted, onBeforeUnmount } from 'vue';
 import Administrator from 'src/models/Administrator';
 
 const administrator = reactive(new Administrator());
@@ -63,9 +63,9 @@ const administrator = reactive(new Administrator());
 // 切换空调开关
 const toggleAC = () => {
   administrator.acStatus = !administrator.acStatus;
-  if(administrator.acStatus){
+  if (administrator.acStatus) {
     administrator.AdminPowerOn('/admin/adminpoweron');
-  } else{
+  } else {
     administrator.AdminPowerOff('/admin/adminpoweroff');
   }
 };
@@ -73,7 +73,7 @@ const toggleAC = () => {
 // 切换工作模式
 const toggleOperationMode = () => {
   administrator.operationMode = administrator.operationMode === '制冷' ? '制热' : '制冷';
-  if(administrator.acStatus){
+  if (administrator.acStatus) {
     administrator.ChangeMode('/admin/changemode');
   }
 };
@@ -83,7 +83,7 @@ watch(
   () => administrator.temperatureRange,
   (newValue) => {
     console.log(newValue);
-    if(administrator.acStatus){
+    if (administrator.acStatus) {
       administrator.ChangeTempRange('/admin/changetemprange');
     }
   }
@@ -93,7 +93,7 @@ watch(
   () => administrator.defaultTargetTemperature,
   (newValue) => {
     console.log(newValue);
-    if(administrator.acStatus){
+    if (administrator.acStatus) {
       administrator.ChangeDefaultTemp('/admin/changedefaulttemp');
     }
   }
@@ -107,12 +107,30 @@ watch(
   }),
   (newValue) => {
     console.log(newValue);
-    if(administrator.acStatus){
+    if (administrator.acStatus) {
       administrator.ChangeRate('/admin/changerate');
     }
   }
 );
+
+// 定时器相关逻辑
+let intervalId = null;
+
+onMounted(() => {
+  // 每隔3秒调用 RequestAllState
+  intervalId = setInterval(() => {
+    administrator.RequestAllState('/admin/requestallstate');
+  }, 3000);
+});
+
+onBeforeUnmount(() => {
+  // 清除定时器
+  if (intervalId) {
+    clearInterval(intervalId);
+  }
+});
 </script>
+
 
 <style scoped>
 .background {

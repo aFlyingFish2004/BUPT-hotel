@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive } from 'vue';
+import { onMounted, onUnmounted, reactive } from 'vue';
 import RoomMonitor from 'src/models/RoomMonitor';
 
 // 创建响应式的rooms数据
@@ -81,23 +81,42 @@ const rooms = reactive([
   new RoomMonitor(10),
 ]);
 
+// 定时器ID，用于在组件卸载时清除
+let intervalId = null;
+
 // 切换空调状态的方法
 const toggleAcState = (index) => {
   rooms[index].acState = !rooms[index].acState;
-  if(rooms[index].acState){
+  if (rooms[index].acState) {
     rooms[index].MonitorPowerOn('/monitor/monitorpoweron');
   } else {
-    rooms[index].MonitorPowerOff('/monitor/monitorpoweroff')
+    rooms[index].MonitorPowerOff('/monitor/monitorpoweroff');
   }
 };
 
-// 在组件挂载后请求房间状态
+// 在组件挂载后初始化定时器
 onMounted(() => {
-  rooms.forEach(room => {
+  // 初始状态请求
+  rooms.forEach((room) => {
     room.MonitorRequestStates('/monitor/monitorrequeststates');
   });
+
+  // 每隔3秒轮询房间状态
+  intervalId = setInterval(() => {
+    rooms.forEach((room) => {
+      room.MonitorRequestStates('/monitor/monitorrequeststates');
+    });
+  }, 3000);
+});
+
+// 在组件卸载时清除定时器
+onUnmounted(() => {
+  if (intervalId) {
+    clearInterval(intervalId);
+  }
 });
 </script>
+
 
 <style scoped>
 .background {

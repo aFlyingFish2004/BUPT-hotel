@@ -169,18 +169,15 @@ export default class Administrator {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          roomNumber: this.roomNumber,
-        }),
       });
 
       if (response.ok) {
         const data = await response.json();
         this.acState = data.acState;
         this.operationMode = data.operationMode,
-        this.minTemperature = data.temperatureRange.min,
-        this.maxTemperature = data.temperatureRange.max,
-        this.lowSpeedRate = data.lowSpee = data
+        this.temperatureRange.min = data.minTemperature,
+        this.temperatureRange.max = data.maxTemperature,
+        this.lowSpeedRate = data.lowSpeedRate,
         this.mediumSpeedRate = data.mediumSpeedRate,
         this.highSpeedRate = data.highSpeedRate,
         this.defaultTargetTemperature = data.defaultTargetTemperature,
